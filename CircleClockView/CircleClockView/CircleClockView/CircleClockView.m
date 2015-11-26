@@ -10,20 +10,14 @@
 
 #define CELLMARKNUM    10 // Number of formats
 #define CELLNUM        18 // Total grid number
-#define RADIUSOUTSIDE  self.center.x - 35.f // Outer circle radius
+#define RADIUSOUTSIDE  self.center.x - 65.f // Outer circle radius
 #define MAXOFFSETANGLE 180.0f // Plus or minus 360 is a week 180 degrees
 
 @implementation CircleClockView {
     CGContextRef context;
-    
     CGFloat maxAngle;
     CGFloat minAngle;
-    
     CGFloat scoleNum;
-    
-    CGFloat weight;
-    CGFloat bmi;
-    CGFloat progress;
 }
 
 #pragma mark - life cycle
@@ -31,6 +25,18 @@
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
+    if (self) {
+        // set background clear
+        [self setBackgroundColor:[UIColor clearColor]];
+        scoleNum = 1;
+        minAngle = -MAXOFFSETANGLE;
+        maxAngle = MAXOFFSETANGLE;
+    }
+    return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
     if (self) {
         // set background clear
         [self setBackgroundColor:[UIColor clearColor]];
@@ -51,9 +57,9 @@
         minAngle = -MAXOFFSETANGLE;
         maxAngle = MAXOFFSETANGLE;
         
-        weight = t_weight;
-        bmi = t_bmi;
-        progress = t_progress;
+        _weight = t_weight;
+        _bmi = t_bmi;
+        _progress = t_progress;
     }
     return self;
 }
@@ -63,7 +69,9 @@
     //get contex
     context = UIGraphicsGetCurrentContext();
     //Drawing instrument panel
-    [self setLineMark:CELLNUM*CELLMARKNUM];
+    if (self.isShowScale) {
+        [self setLineMark:CELLNUM*CELLMARKNUM];
+    }
     [self drawCircleProgressView];
 }
 
@@ -73,9 +81,9 @@
     daProgressView.progressTintColor = [UIColor colorWithRed:252/256.f green:194/256.f blue:48/256.f alpha:1.f];
     daProgressView.trackTintColor = [UIColor whiteColor];
     daProgressView.thicknessRatio = 0.14f;
-    daProgressView.progress = progress;
+    daProgressView.progress = _progress;
     
-    NSString *stringWeight = [NSString stringWithFormat:@"%.1f kg",weight];
+    NSString *stringWeight = [NSString stringWithFormat:@"%.1f kg",_weight];
     NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc] initWithString:stringWeight];
     [attributeStr setAttributes:@{
                                    NSFontAttributeName:[UIFont systemFontOfSize:65.f]
@@ -85,7 +93,8 @@
                                   } range:NSMakeRange(stringWeight.length - 3, 3)];
     daProgressView.progressLabel.attributedText = attributeStr;
     
-    daProgressView.bottomLabel.text = [NSString stringWithFormat:@"BMI %1.f / 偏胖",bmi];
+    // charge
+    daProgressView.bottomLabel.text = [NSString stringWithFormat:@"BMI %.1f / 偏胖",_bmi];
     daProgressView.topLabel.text = @"体重";
     
     [self.superview addSubview:daProgressView];
